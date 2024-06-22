@@ -1,11 +1,27 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
 	"strconv"
 	"strings"
 )
+var url = "http://localhost:8000/"
+type validateRequest struct {
+	Name string `json:"Password"`
+	Password string `json:"client_id"`
+	Number int `json:"CardNumber"`
+}
+type validateResponse struct {
+	Valid bool `json:"valid"` 
+	Limit uint64	`json:"limit"`
+}
+
 
 func main() {
 	var number = read_digit()
@@ -14,8 +30,60 @@ func main() {
 	}
 }
 
+func validate_with_server(username, password, number string) (valid bool, limit uint64, err error) {
+	valid = false
+	limit = 0
+	hasher := sha256.New()
+	var temp validateRequest
+	temp.Name = string(hasher.Sum([]byte(username)))
+	temp.Number, err = strconv.Atoi(number)
+	if err != nil {
+		log.Println("Error while converting number: ", err.Error())
+		return valid, limit, fmt.Errorf("error: can try again with different values")
+	}
+	temp.Password = string(hasher.Sum([]byte(password)))
+
+	// make into json
+	jsonData, err := json.Marshal(temp)
+	if err != nil {
+		log.Println("Error while Unmarshalling ", err.Error())
+		err = fmt.Errorf("error, can try different values")
+		return valid, limit, err
+	}
+	// read bytes into post
+	resp, err := http.Post(url + "validateNumber", "application/json", bytes.NewReader(jsonData))
+	if err != nil {
+		log.Println("Error making POST Request")
+		return valid, limit, fmt.Errorf("error: unable to connect")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		log.Printf("Recieved %d as an error code", resp.StatusCode)
+		err = fmt.Errorf("error: try again later")
+		return valid, limit, err
+	}
+	var response_struct validateResponse
+	var response_data []byte
+	response_data, err = io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error with reading Response: ", err.Error())
+	}
+	err = json.Unmarshal(response_data, &response_struct)
+	if err != nil {
+		log.Println("Error unmarshalling response", err)
+		err =  fmt.Errorf("error on backend can try again")
+		return valid, limit, err
+	}
+	return response_struct.Valid, response_struct.Limit, nil
+}
+
+func check_card_Provider() {
+
+}
+
+
 func read_digit() (number string) {
-	var err = fmt.Errorf("Put in a number: ")
+	var err = fmt.Errorf("put in a number: ")
 	for err != nil {
 		println(err.Error() + " ")
 		_, err = fmt.Scanln(number)
@@ -32,9 +100,9 @@ func luhn_digit(digits string) (valid bool) {
 	digits = strings.ReplaceAll(digits, " ", "")
 	var digit = 0
 	var even = true
-	for i := len(digits) - 2; i > 0; i-- {
+	for i := len(digits) - 2; i >= 0; i-- {
 		temp_digit, err := strconv.Atoi(string(digits[i]))
-		println(temp_digit) // debugging remove later
+		print(temp_digit) // debugging remove later
 		if err != nil {
 			println()
 			return false
@@ -49,8 +117,12 @@ func luhn_digit(digits string) (valid bool) {
 		even = !even
 		digit += temp_digit
 	}
+	println()
 	last, err := strconv.Atoi(string(digits[len(digits) - 1]))
-	if err != nil || 10 % digit != last {
+	println(last, " + ", digit)
+	temp_dig := 10 - digit % 10
+	if err != nil || temp_dig != last {
+		println("error: ", err.Error())
 		return false
 	}
 	return true
