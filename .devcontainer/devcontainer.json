@@ -1,0 +1,16 @@
+{
+  "name": "golang-postgres-server",
+  "dockerFile": "./dockerfile",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "github.copilot",
+        "golang.go",
+        "hbenl.vscode-test-explorer",
+        "visualstudioexptteam.vscodeintellicode",
+        "ms-ossdata.vscode-postgresql",
+        "ckolkman.vscode-postgres"
+      ]
+    }
+  }
+}

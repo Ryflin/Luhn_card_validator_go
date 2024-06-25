@@ -1,0 +1,5 @@
+FROM fedora
+
+RUN dnf install -y git
+RUN dnf install -y golang
+RUN dnf install -y postgresql-server

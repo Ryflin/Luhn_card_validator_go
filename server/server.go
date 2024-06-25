@@ -2,6 +2,8 @@ package main
 
 import (
 	"crypto/sha256"
+
+	// "crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -10,57 +12,64 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 )
 
 type card struct {
-	Number int `json:"Number"`
-	CardLimit uint64 `json:"Limit"`
+	Number         int    `json:"Number"`
+	CardLimit      uint64 `json:"Limit"`
 	CurrentlySpent uint64 `json:"Spent"`
-	CreditScore int `json:"Score"`
-	User string `json:"User"`
-	Password string `json:"Client_id"`
-	Provider string `json:"Provider"`
+	CreditScore    int    `json:"Score"`
+	User           string `json:"User"`
+	Password       string `json:"Client_id"`
+	Provider       string `json:"Provider"`
 }
 
 type validateRequest struct {
-	Name string `json:"Password"`
+	Name     string `json:"Password"`
 	Password string `json:"client_id"`
-	Number int `json:"CardNumber"`
+	Number   int    `json:"CardNumber"`
 }
 
 type validationResponse struct {
-	Valid bool `json:"valid"`
+	Valid bool   `json:"valid"`
 	Limit uint64 `json:"limit"`
 }
 
-type account struct {
-	Holder map[string]card
-}
-// implement salt. how do I make it good. 
+// string that is the link. then an array of requests and the times
+
+
+
 
 
 // func UpdateAccount(args...account) (account, error){
-	
+
 // 	if len(args) > 1 {
 // 		err := fmt.Errorf("Only one account can be made at a time")
 // 	}
 // }
 
-
-
 // func createNewCard(args...string) {
 
 // }
 
-
-
 func getUserHashFile(userName string) (fileName string, exists bool) {
-	return "db.json", true
+	data, err := os.ReadFile("users.json")
+	if err != nil {
+		return "", false
+	}
+	var users map[string]string
+	err = json.Unmarshal(data, &users)
+	if err != nil {
+		return "", false
+	}
+	fileName, exists = users[userName]
+	return fileName, exists
 }
 
 // func loadUsers() (filePath map[string]string) {
 // 	data, err := os.ReadFile("users.json")
-	
+
 // }
 
 // func writeUsers(users map[string]string) {
@@ -74,13 +83,15 @@ func getUserHashFile(userName string) (fileName string, exists bool) {
 // 		log.Println("Error getting raw data: ", err)
 // 	}
 // 	err = json.Unmarshal(jsonData, &recievedData)
-	
-// 	// testing response 
+
+// 	// testing response
 // 	var resp validationResponse
 // 	resp.Limit = 200
 // 	resp.Valid = true
 // 	c.JSON(200, resp)
 // }
+
+
 
 // func rateLimit()
 // add salt to user name later
@@ -88,11 +99,10 @@ func getUserHashFile(userName string) (fileName string, exists bool) {
 
 // for now use json to emulate the db searching
 
-
 func getUserCard(filename string, userHash string) (userCard card, err error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
-		log.Debug("Cannot read user file: "+err.Error())
+		log.Debug("Cannot read user file: " + err.Error())
 		return card{}, err
 	}
 	var allusers map[string]card
@@ -131,25 +141,23 @@ func validateNumber(c *fiber.Ctx) (err error) {
 		userCard, err = getUserCard(filename, userHash)
 
 	} else {
-		log.Debug("incorrect credentials")
+		log.Debug("User does not exist")
 	}
 	if err != nil {
 		log.Debug(err)
 		err = c.JSON(resp)
 		return err
 	}
-	log.Debug(recievedData.Name + " " + recievedData.Name + " " + recievedData.Password + " extra " + userCard.Password + " " + userCard.Password)
+	// log.Debug(recievedData.Name + " " + recievedData.Name + " " + recievedData.Password + " extra " + userCard.Password + " " + userCard.Password)
 	if recievedData.Name != userCard.User || recievedData.Password != userCard.Password || recievedData.Number != userCard.Number {
 		log.Debug("Incorrect credentials\n")
 		err = c.JSON(resp)
 		return err
-	} 
+	}
 
-
-
-	// testing response 
+	// testing response
 	resp.Limit = userCard.CardLimit - userCard.CurrentlySpent
-	log.Debug("limit ", userCard.CardLimit, "  ", userCard.CurrentlySpent)
+	// log.Debug("limit ", userCard.CardLimit, "  ", userCard.CurrentlySpent)
 	resp.Valid = true
 	err = c.JSON(resp)
 	if err != nil {
@@ -158,9 +166,10 @@ func validateNumber(c *fiber.Ctx) (err error) {
 	return
 }
 
-
 func main() {
 	f := fiber.New()
+	f.Use(limiter.New())
+	// f.Use(rateLimitBasicFrequency)
 	f.Post("/validateNumber", validateNumber)
 	log.Fatal(f.Listen(":8080"))
 }

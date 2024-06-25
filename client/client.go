@@ -27,7 +27,6 @@ type validateResponse struct {
 func main() {
 	var number = read_digit()
 	for luhn_digit(number) {
-
 	}
 }
 
