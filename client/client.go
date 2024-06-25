@@ -85,7 +85,6 @@ func check_card_Provider() {
 
 }
 
-
 func read_digit() (number string) {
 	var err = fmt.Errorf("put in a number: ")
 	for err != nil {

@@ -33,60 +33,11 @@ type validationResponse struct {
 	Limit uint64 `json:"limit"`
 }
 
-type account struct {
-	Holder map[string]card
-}
-// implement salt. how do I make it good. 
-
-
-// func UpdateAccount(args...account) (account, error){
-	
-// 	if len(args) > 1 {
-// 		err := fmt.Errorf("Only one account can be made at a time")
-// 	}
-// }
-
-
-
-// func createNewCard(args...string) {
-
-// }
-
 
 
 func getUserHashFile(userName string) (fileName string, exists bool) {
 	return "db.json", true
 }
-
-// func loadUsers() (filePath map[string]string) {
-// 	data, err := os.ReadFile("users.json")
-	
-// }
-
-// func writeUsers(users map[string]string) {
-
-// }
-
-// func validateNumber(c *gin.Context) {
-// 	var recievedData validateRequest
-// 	jsonData, err := c.GetRawData()
-// 	if err != nil {
-// 		log.Println("Error getting raw data: ", err)
-// 	}
-// 	err = json.Unmarshal(jsonData, &recievedData)
-	
-// 	// testing response 
-// 	var resp validationResponse
-// 	resp.Limit = 200
-// 	resp.Valid = true
-// 	c.JSON(200, resp)
-// }
-
-// func rateLimit()
-// add salt to user name later
-// salt done by inserting random character in certain indexes so that it doesn't match the fake user hash
-
-// for now use json to emulate the db searching
 
 
 func getUserCard(filename string, userHash string) (userCard card, err error) {
@@ -161,6 +112,6 @@ func validateNumber(c *fiber.Ctx) (err error) {
 
 func main() {
 	f := fiber.New()
-	f.Post("/validateNumber", validateNumber)
+	f.Post("/validateUser", validateNumber)
 	log.Fatal(f.Listen(":8080"))
 }
