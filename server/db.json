@@ -1,0 +1,11 @@
+{
+  "9b748280842d6a2109c22c3c02d02fc8968cf538f722ad39a13a1e224d4e1582": {
+    "Client_id": "60edd05ddde22a603f7af8f2ec69ea866d8a7b53116383b9a36cc7fc90b68f47",
+    "Spent": 1000,
+    "Limit": 1100,
+    "CreditScore": 370,
+    "Number": 17893729974, 
+    "User" : "luhn_wiki",
+    "Provider": "Master Bank"
+  }
+}

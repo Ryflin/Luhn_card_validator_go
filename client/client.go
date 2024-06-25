@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 )
-var url = "http://localhost:8000/"
+var url = "http://localhost:8080/"
 type validateRequest struct {
 	Name string `json:"Password"`
 	Password string `json:"client_id"`
@@ -30,18 +31,21 @@ func main() {
 	}
 }
 
+
+// validates an account wtih the server and checks to see if the balance should be declined
 func validate_with_server(username, password, number string) (valid bool, limit uint64, err error) {
 	valid = false
 	limit = 0
 	hasher := sha256.New()
 	var temp validateRequest
-	temp.Name = string(hasher.Sum([]byte(username)))
+	temp.Name = username
 	temp.Number, err = strconv.Atoi(number)
 	if err != nil {
 		log.Println("Error while converting number: ", err.Error())
 		return valid, limit, fmt.Errorf("error: can try again with different values")
 	}
-	temp.Password = string(hasher.Sum([]byte(password)))
+	hasher.Write([]byte(password))
+	temp.Password = hex.EncodeToString(hasher.Sum(nil))
 
 	// make into json
 	jsonData, err := json.Marshal(temp)
