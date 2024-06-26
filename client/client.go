@@ -27,7 +27,7 @@ type validateResponse struct {
 func main() {
 	var number = read_digit()
 	for luhn_digit(number) {
-
+		go validate_number(number)
 	}
 }
 
@@ -55,7 +55,7 @@ func validate_with_server(username, password, number string) (valid bool, limit 
 		return valid, limit, err
 	}
 	// read bytes into post
-	resp, err := http.Post(url + "validateNumber", "application/json", bytes.NewReader(jsonData))
+	resp, err := http.Post(url + "validateUser", "application/json", bytes.NewReader(jsonData))
 	if err != nil {
 		log.Println("Error making POST Request")
 		return valid, limit, fmt.Errorf("error: unable to connect")
@@ -85,6 +85,19 @@ func check_card_Provider() {
 
 }
 
+func validate_number(number string) {
+	var valid = false
+
+	
+	if valid {
+		println("Number ", number, " is valid")
+	} else {
+		println("Number ", number, " isn't valid")
+	}
+}
+
+
+
 func read_digit() (number string) {
 	var err = fmt.Errorf("put in a number: ")
 	for err != nil {
@@ -100,6 +113,9 @@ func read_digit() (number string) {
 //
 // Information about luhn validation found here https://en.wikipedia.org/wiki/Luhn_algorithm
 func luhn_digit(digits string) (valid bool) {
+	if len(digits) < 2 {
+		return false;
+	}
 	digits = strings.ReplaceAll(digits, " ", "")
 	var digit = 0
 	var even = true
@@ -109,7 +125,6 @@ func luhn_digit(digits string) (valid bool) {
 		if err != nil {
 			println()
 			return false
-
 		}
 		if even {
 			temp_digit *= 2
@@ -122,10 +137,15 @@ func luhn_digit(digits string) (valid bool) {
 	}
 	println()
 	last, err := strconv.Atoi(string(digits[len(digits) - 1]))
+	if err != nil {
+		println("error: ", err.Error())
+		return false
+	}
 	println(last, " + ", digit)
 	temp_dig := 10 - digit % 10
-	if err != nil || temp_dig != last {
-		println("error: ", err.Error())
+
+	if temp_dig != last {
+		// println("error: ", err.Error())
 		return false
 	}
 	return true

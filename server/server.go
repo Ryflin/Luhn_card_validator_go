@@ -60,6 +60,7 @@ func getUserCard(filename string, userHash string) (userCard card, err error) {
 }
 
 func validateNumber(c *fiber.Ctx) (err error) {
+	log.Debug("post made")
 	var resp validationResponse
 	resp.Limit = 0
 	resp.Valid = false
@@ -113,5 +114,9 @@ func validateNumber(c *fiber.Ctx) (err error) {
 func main() {
 	f := fiber.New()
 	f.Post("/validateUser", validateNumber)
+	f.Get("/", func(c *fiber.Ctx) error {
+		log.Debug("Get made")
+		return c.Next()
+	})
 	log.Fatal(f.Listen(":8080"))
 }
