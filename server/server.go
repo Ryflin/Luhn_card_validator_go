@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 )
@@ -36,10 +35,10 @@ type validationResponse struct {
 
 
 func getUserHashFile(userName string) (fileName string, exists bool) {
-	return "db.json", true
+	return "db.json", true // to be extended later
 }
 
-
+// gets the user's card to verify if the user exists
 func getUserCard(filename string, userHash string) (userCard card, err error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
@@ -58,8 +57,8 @@ func getUserCard(filename string, userHash string) (userCard card, err error) {
 	}
 	return userCard, nil
 }
-
-func validateNumber(c *fiber.Ctx) (err error) {
+// validates the post request of user name, password and number
+func validtaeUser(c *fiber.Ctx) (err error) {
 	log.Debug("post made")
 	var resp validationResponse
 	resp.Limit = 0
@@ -113,7 +112,7 @@ func validateNumber(c *fiber.Ctx) (err error) {
 
 func main() {
 	f := fiber.New()
-	f.Post("/validateUser", validateNumber)
+	f.Post("/validateUser", validtaeUser)
 	f.Get("/", func(c *fiber.Ctx) error {
 		log.Debug("Get made")
 		return c.Next()

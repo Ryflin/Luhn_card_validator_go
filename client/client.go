@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"bytes"
@@ -24,16 +24,9 @@ type validateResponse struct {
 }
 
 
-func main() {
-	var number = read_digit()
-	for luhn_digit(number) {
-		go validate_number(number)
-	}
-}
 
-
-// validates an account wtih the server and checks to see if the balance should be declined
-func validate_with_server(username, password, number string) (valid bool, limit uint64, err error) {
+// validates an account wtih the server and provides the spend limit of that card
+func Validate_with_server(username, password, number string) (valid bool, limit uint64, err error) {
 	valid = false
 	limit = 0
 	hasher := sha256.New()
@@ -81,24 +74,10 @@ func validate_with_server(username, password, number string) (valid bool, limit 
 	return response_struct.Valid, response_struct.Limit, nil
 }
 
-func check_card_Provider() {
-
-}
-
-func validate_number(number string) {
-	var valid = false
-
-	
-	if valid {
-		println("Number ", number, " is valid")
-	} else {
-		println("Number ", number, " isn't valid")
-	}
-}
 
 
 
-func read_digit() (number string) {
+func Read_digit() (number string) {
 	var err = fmt.Errorf("put in a number: ")
 	for err != nil {
 		println(err.Error() + " ")
@@ -112,7 +91,7 @@ func read_digit() (number string) {
 // `digits` the "credit card" string with the last number being the payload
 //
 // Information about luhn validation found here https://en.wikipedia.org/wiki/Luhn_algorithm
-func luhn_digit(digits string) (valid bool) {
+func Luhn_digit_check(digits string) (valid bool) {
 	if len(digits) < 2 {
 		return false;
 	}
